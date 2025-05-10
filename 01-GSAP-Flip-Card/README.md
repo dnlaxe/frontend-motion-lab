@@ -1,4 +1,4 @@
-# Front-End Deep Practice: 01-GSAP-Flip-Card
+# Frontend Motion Lab:: 01-GSAP-Flip-Card
 
 ## Features
 - Interactive **3D card flip animation** triggered by custom buttons using **GSAP**.
