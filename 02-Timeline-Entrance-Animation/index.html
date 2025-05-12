@@ -8,7 +8,7 @@
 
   :root {
         --fg: hsl(60, 2%, 25%);
-        --bg: #cacaca;
+        --bg: #e4e3e3;
       }
 
     * {
@@ -30,8 +30,8 @@
     }
 
     .box {
-      width: 400px;
-      height: 400px;
+      width: 200px;
+      height: 200px;
       border-radius: 20px;
       background-color: var(--fg);
       opacity: 0;
@@ -115,6 +115,34 @@
       text: "Hello, world!",
       duration: 2,
       ease: "power2.out"
+    });
+
+        // === Robust viewport height (vh) fix ===
+    function setVh() {
+      const vh = (window.visualViewport?.height || window.innerHeight) * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    // Set once after full page load to avoid early firing
+    window.addEventListener('load', () => {
+      // Wait for layout to stabilize
+      requestAnimationFrame(() => {
+        requestAnimationFrame(setVh);
+      });
+    });
+
+    // Update on viewport resize
+    window.addEventListener('resize', setVh);
+    window.addEventListener('orientationchange', setVh);
+
+    // Chrome-specific: listen for UI collapse/expand
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', setVh);
+    }
+
+    // Fallback for Chrome: update on scroll (address bar collapses)
+    window.addEventListener('scroll', () => {
+      requestAnimationFrame(setVh);
     });
 
 
