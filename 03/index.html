@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Three.js Extended Camera Controls</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    canvas {
+      display: block;
+    }
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 13px;
+      z-index: 1;
+    }
+    footer label {
+      display: flex;
+      flex-direction: column;
+      color: white;
+    }
+    footer input {
+      width: 70px;
+    }
+  </style>
+</head>
+<body>
+
+  <footer>
+    <!-- Perspective camera settings -->
+    <label>FOV <input type="number" id="fov" value="75" /></label>
+    <label>Aspect <input type="number" id="aspect" step="0.1" value="1.78" /></label>
+    <label>Near <input type="number" id="near" step="0.1" value="0.1" /></label>
+    <label>Far <input type="number" id="far" value="1000" /></label>
+
+    <!-- Position -->
+    <label>Cam X <input type="number" id="camX" step="0.1" value="0" /></label>
+    <label>Cam Y <input type="number" id="camY" step="0.1" value="0" /></label>
+    <label>Cam Z <input type="number" id="camZ" step="0.1" value="3" /></label>
+
+    <!-- Rotation -->
+    <label>Rot X <input type="number" id="rotX" step="0.1" value="0" /></label>
+    <label>Rot Y <input type="number" id="rotY" step="0.1" value="0" /></label>
+    <label>Rot Z <input type="number" id="rotZ" step="0.1" value="0" /></label>
+
+    <!-- Zoom -->
+    <label>Zoom <input type="number" id="zoom" step="0.1" value="1" /></label>
+
+    <!-- LookAt Target -->
+    <label>LookAt X <input type="number" id="lookX" step="0.1" value="0" /></label>
+    <label>LookAt Y <input type="number" id="lookY" step="0.1" value="0" /></label>
+    <label>LookAt Z <input type="number" id="lookZ" step="0.1" value="0" /></label>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
+
+  <script>
+    // Setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('skyblue');
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Object
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(),
+      new THREE.MeshBasicMaterial({ color: 'blue' })
+    );
+    scene.add(cube);
+
+    // Camera
+    let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 3;
+
+function updateCameraFromInputs() {
+  // === Camera projection parameters ===
+  const fov = parseFloat(document.getElementById('fov').value);        // Field of View (in degrees): how wide the camera's view is
+  const aspect = parseFloat(document.getElementById('aspect').value);  // Aspect ratio: usually canvas width / height
+  const near = parseFloat(document.getElementById('near').value);      // Near clipping plane: how close objects can be before they're clipped
+  const far = parseFloat(document.getElementById('far').value);        // Far clipping plane: how far objects can be before they're clipped
+
+  // === Camera position in 3D space ===
+  const posX = parseFloat(document.getElementById('camX').value);      // Camera X position: left (-) to right (+)
+  const posY = parseFloat(document.getElementById('camY').value);      // Camera Y position: down (-) to up (+)
+  const posZ = parseFloat(document.getElementById('camZ').value);      // Camera Z position: closer (-) to farther (+)
+
+  // === Camera rotation in radians ===
+  const rotX = parseFloat(document.getElementById('rotX').value);      // Rotation around X axis (tilting up/down)
+  const rotY = parseFloat(document.getElementById('rotY').value);      // Rotation around Y axis (panning left/right)
+  const rotZ = parseFloat(document.getElementById('rotZ').value);      // Rotation around Z axis (rolling clockwise/counterclockwise)
+
+  // === Camera zoom factor ===
+  const zoom = parseFloat(document.getElementById('zoom').value);      // Zoom level: >1 zooms in, <1 zooms out
+
+  // === Target point the camera looks at ===
+  const lookX = parseFloat(document.getElementById('lookX').value);    // LookAt X target
+  const lookY = parseFloat(document.getElementById('lookY').value);    // LookAt Y target
+  const lookZ = parseFloat(document.getElementById('lookZ').value);    // LookAt Z target
+
+  // === Apply camera settings ===
+  camera.fov = fov;
+  camera.aspect = aspect;
+  camera.near = near;
+  camera.far = far;
+  camera.zoom = zoom;
+  camera.updateProjectionMatrix(); // Must be called after changing FOV, aspect, near, far, or zoom
+
+  camera.position.set(posX, posY, posZ);
+  camera.rotation.set(rotX, rotY, rotZ); // Rotation in radians
+  camera.lookAt(new THREE.Vector3(lookX, lookY, lookZ)); // Re-orients the camera to look at the specified target
+
+  render(); // Redraw the scene with updated camera settings
+}
+
+
+    function render() {
+      renderer.render(scene, camera);
+    }
+
+    // Input listeners
+    document.querySelectorAll('footer input').forEach(input => {
+      input.addEventListener('input', updateCameraFromInputs);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      render();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
